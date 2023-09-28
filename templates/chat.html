@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat Bot</title>
+</head>
+<body>
+    <h1></h1>
+    <h3>Hi I am Dave. The new Chat Bot</h3>
+    <h4>Type your prompts below</h4>
+    <div id="chatbox">
+        <!-- Chatbot response will be displayed here -->
+    </div>
+    <form id="chat-form" method="POST">
+        <input type="text" id="user-input" name="user_input" placeholder="Type a message...">
+        <button type="submit">Send</button>
+    </form>
+    <script>
+
+        // JavaScript code to handle form submission and update the chatbox
+        console.log('Submitting form via POST');
+        document.getElementById("chat-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            var userMessage = document.getElementById("user-input").value;
+            document.getElementById("chatbox").innerHTML += '<p>You: ' + userMessage + '</p>';
+
+            // Send the user input to the server using fetch
+            fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_input: userMessage }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("chatbox").innerHTML += '<p>Dave: ' + data.chatbot_response + '</p>';
+            });
+        });
+    </script>
+</body>
+</html>
