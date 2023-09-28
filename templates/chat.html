@@ -5,24 +5,27 @@
     <title>Chat Bot</title>
 </head>
 <body>
-    <h1></h1>
+    <h1>Chat Bot</h1>
     <h3>Hi I am Dave. The new Chat Bot</h3>
     <h4>Type your prompts below</h4>
     <div id="chatbox">
-        <!-- Chatbot response will be displayed here -->
+        <!-- Chatbot and user messages will be displayed here -->
     </div>
     <form id="chat-form" method="POST">
         <input type="text" id="user-input" name="user_input" placeholder="Type a message...">
         <button type="submit">Send</button>
     </form>
     <script>
+        const chatbox = document.getElementById("chatbox");
+        const chatForm = document.getElementById("chat-form");
+        const userInput = document.getElementById("user-input");
 
-        // JavaScript code to handle form submission and update the chatbox
-        console.log('Submitting form via POST');
-        document.getElementById("chat-form").addEventListener("submit", function(event) {
+        chatForm.addEventListener("submit", function(event) {
             event.preventDefault();
-            var userMessage = document.getElementById("user-input").value;
-            document.getElementById("chatbox").innerHTML += '<p>You: ' + userMessage + '</p>';
+            const userMessage = userInput.value;
+
+            // Display the user's message in the chatbox
+            displayMessage("You", userMessage);
 
             // Send the user input to the server using fetch
             fetch('/chat', {
@@ -34,9 +37,17 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById("chatbox").innerHTML += '<p>Dave: ' + data.chatbot_response + '</p>';
+                // Display the chatbot's response in the chatbox
+                displayMessage('Dave', data.chatbot_response);
             });
+
+            // Clear the input field after sending the message
+            userInput.value = "";
         });
+
+        function displayMessage(sender, message) {
+            chatbox.innerHTML += `<p>${sender}: ${message}</p>`;
+        }
     </script>
 </body>
 </html>

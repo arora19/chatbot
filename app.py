@@ -1,109 +1,67 @@
-import export as export
+import export
 from flask import Flask, request, jsonify, render_template
 import requests
 import os
 import json
-# Set the OPENAI_API_BASE environment variable
-os.environ["OPENAI_API_BASE"] = "https://api.endpoints.anyscale.com/v1"
 
-
-# create a Flask application
-# instance of the Flask class is created and assigned to the variable 'app'. This instance represents the web app.
-
+# Create a Flask application
 app = Flask(__name__)
 
+# Load API key and model ID from config.json
+with open('config.json') as config_file:
+    config = json.load(config_file)
+    anyscale_api_key = config["anyscale_api_key"]
+    model_id = config["model_id"]
 
-# define a Route and View function
+# Define the AnyScale API base URL
+#export OPENAI_API_BASE='https://api.endpoints.anyscale.com/v1'
+base_url = 'https://api.endpoints.anyscale.com/v1/'
 
+# Function to send user input to the chatbot and get a response
+def send_user_input(user_input):
+    try:
+        # Construct the URL for your specific model
+        url = f'{base_url}{model_id}/completions'
 
-@app.route('/')
-def hello():  # function called when user accesses the root url.
-    # print('inside hello func')
-    return 'Hello, this is your chatbot!'
+        # Set up headers with the Authorization header
+        headers = {
+            'Authorization': f'Bearer {anyscale_api_key}',
+            'Content-Type': 'application/json',
+        }
 
+        # Prepare the request body with user input
+        body = {
+            "messages": [{"role": "user", "content": user_input}],
+        }
 
-# Define the URL for the chatbot interaction
-chatbot_url = 'http://127.0.0.1:5000/chat'
-
-
-
-
-# Function to process user input and generate a chatbot response
-def process_user_input(user_input):
-    print("Inside process_user_input function")
-    # basic chatbot logic: Echo the user's input
-    return f' {user_input}'
-
-
-@app.route('/chat', methods=['POST'])
-#@app.route('/chat', methods=['GET', 'POST'])
-def chat():
-    # print('inside chat func')
-    if request.method == 'POST':
-        print('Request method is POST')
-        user_input = request.json.get('user_input')
-        if user_input == 'hi' or user_input == 'hello':
-            return "Hello, I hope you are having a great day. How can I help?"
+        # Make a POST request to the AnyScale API
+        response = requests.post(url, headers=headers, json=body)
+        print("API Response:", response.text)
+        if response.status_code == 200:
+            data = response.json()
+            chatbot_response = data.get('choices')[0].get('message').get('content')
+            return chatbot_response
         else:
-            # Make an API request
-            try:
-                # Get the API key from the environment variable
-                api_key = os.environ.get("ANYSCALE_API_KEY")
+            return 'Sorry, I couldn\'t fetch a response at the moment.'
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
 
-                # Define the base URL for the AnyScale API
-                base_url = 'https://api.endpoints.anyscale.com/v1/'
+# Add a route to serve the chat.html file
+@app.route('/chatpage', methods=['GET', 'POST'])
+def chat_page():
+    return render_template('chat.html')  # Render the chat.html template
 
-                # Construct the URL for a sample recipe (you can modify this)
-                url = f'{base_url}random'
-
-                # Set up request parameters, including your API key
-                headers = {
-                    'Authorization': f'Bearer {api_key}',
-                }
-
-                # Make the API request
-                response = requests.get(url, headers=headers)
-
-                if response.status_code == 200:
-                     # If the request is successful, parse the response JSON
-                    data = response.json()
-                    recipe_title = data.get('title', 'Title not found in response')
-                    return f"Here's a random recipe: {recipe_title}"
-                else:
-                    return 'Sorry, I couldn\'t fetch a recipe at the moment.'
-
-            except Exception as e:
-                return f"An error occurred: {str(e)}"
-    else:
-        return jsonify({'chatbot_response': 'This endpoint only supports POST requests'})
-
-    '''
-        # print("Inside chat func where method= POST")
-        # Retrieve user's input from the request's JSON data.
+# Modify the /chat route to handle both GET and POST requests
+@app.route('/chat', methods=['GET', 'POST'])
+def chat():
+    if request.method == 'POST':
         user_input = request.json.get('user_input')
-
-        # Process the user input and generate a response.
-        chatbot_response = process_user_input("Did you say: " + user_input + "?")
-
-        # Return the chatbot's response as JSON
+        chatbot_response = send_user_input(user_input)
         return jsonify({'chatbot_response': chatbot_response})
-    else:
-        return render_template('chat.html')
-'''
-
+    elif request.method == 'GET':
+        # Handle GET requests here
+        initial_message = "Welcome to the chat! Start by typing a message."
+        return jsonify({'chatbot_response': initial_message})
 
 if __name__ == '__main__':
-    try:
-        with open('config.json') as config_file:
-            config = json.load(config_file)
-            api_key = config["api_key"]
-    except FileNotFoundError:
-        print("The configuration file 'my_config.json' does not exist.")
-    except KeyError:
-        print("The 'api_key' key is missing in the configuration file.")
-    except json.JSONDecodeError:
-        print("Error decoding the JSON configuration file.")
-
-    # user_input = 'Hello, chatbot!'
     app.run(debug=True)
-
