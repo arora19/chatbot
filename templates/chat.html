@@ -24,6 +24,16 @@
             border-radius: 10px;
         }
 
+	#typing-indicator {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 8px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+        }
+
         #chat-form {
             max-width: 600px;
             margin: 20px auto;
@@ -78,6 +88,9 @@
     <div id="chatbox">
         <!-- User and chatbot messages will be displayed here -->
     </div>
+    <div id="typing-indicator" style="display: none;">
+	Dave is typing...
+    </div>
     <form id="chat-form" >
         <input type="text" id="user-input" placeholder="Type a message...">
         <button type="submit">Send</button>
@@ -104,9 +117,17 @@
             })
             .then(response => response.json())
             .then(data => {
-                // Display the chatbot's response in the chatbox
-                displayMessage('Dave', data.chatbot_response);
-            });
+            // Hide the typing indicator
+            document.getElementById("typing-indicator").style.display = "none";
+
+            // Display the chatbot's response in the chatbox
+            displayMessage('Dave', data.chatbot_response);
+        })
+        .catch(error => {
+            // Hide the typing indicator in case of an error
+            document.getElementById("typing-indicator").style.display = "none";
+            console.error("Error fetching chatbot response:", error);
+        });
 
             // Clear the input field after sending the message
             userInput.value = "";
