@@ -1,5 +1,5 @@
 # chatbot
-Web-based chatbot application using the Llama-2 model from Meta served by Anyscale API, integrated within a Flask web framework. The chatbot provides real-time responses to user queries, enhancing user engagement and offering immediate information.
+Web-based AI- driven chatbot application using the Llama-2 model from Meta served by Anyscale API, integrated within a Flask web framework. The chatbot provides real-time responses to user queries, enhancing user engagement and offering immediate information.
 
 After setting up your environment and API key. ![Screenshot 2023-10-17 at 11 34 03 AM](https://github.com/arora19/chatbot/assets/90064567/a2a51623-3805-4bf2-a52d-59482dee5386)
 
